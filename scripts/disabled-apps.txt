@@ -1,0 +1,35 @@
+# Apps disabled on a Xiaomi Mi TV MiTV-MOOQ0 (Android TV 10). Disabled for user 0, never uninstalled.
+# Remove a line to keep that app. See docs/APPS.md for what each one is.
+android.autoinstalls.config.xiaomi.amelie
+com.android.deskclock
+com.android.printspooler
+com.duokan.factorytest
+com.google.android.feedback
+com.google.android.leanbacklauncher
+com.google.android.leanbacklauncher.recommendations
+com.google.android.marvin.talkback
+com.google.android.play.games
+com.google.android.syncadapters.calendar
+com.google.android.syncadapters.contacts
+com.google.android.tv.bugreportsender
+com.google.android.tvlauncher
+com.google.android.tvrecommendations
+com.google.android.videos
+com.mediatek.wwtv.webview
+com.mitv.gallery
+com.mitv.tvhome.atv
+com.mitv.tvhome.michannel
+com.mitv.tvhome.mitvplus
+com.mitv.tvlock
+com.miui.tv.analytics
+com.mstar.android.tv.disclaimercustomization
+com.xiaomi.amazon.alexa
+com.xiaomi.floatingframe
+com.xiaomi.mimusic2
+com.xiaomi.mitv.handbook
+com.xiaomi.mitv.tvmanager
+com.xiaomi.statistic
+com.xiaomo.tv.milegal
+com.xm.webcontent
+fusion.android.tv.demo
+mediatek.factorymenu.ui

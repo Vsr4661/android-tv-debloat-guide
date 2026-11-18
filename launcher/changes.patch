@@ -1,0 +1,134 @@
+diff --git a/launcher/app/src/main/java/com/gathin/tvhome/AppAdapter.java b/launcher/app/src/main/java/com/gathin/tvhome/AppAdapter.java
+index 7ab30bf..083c443 100644
+--- a/launcher/app/src/main/java/com/gathin/tvhome/AppAdapter.java
++++ b/launcher/app/src/main/java/com/gathin/tvhome/AppAdapter.java
+@@ -685,7 +685,11 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+         if (position < 0 || position >= items.size()) return 0xFF444444;
+         Entry e = items.get(position);
+         if (e.ambient == 0) {
+-            e.ambient = uniformTiles && e.banner == null ? dominantColor(e.icon) : vividColor(e.banner != null ? e.banner : e.icon);
++            // Local change: fixed glow colours for the dock apps, so each one looks distinct.
++            if ("in.startv.hotstar".equals(e.pkg)) e.ambient = 0xFFF2087F;          // pink
++            else if ("com.google.android.youtube.tv".equals(e.pkg)) e.ambient = 0xFFFF2A1A;  // bright red
++            else if ("com.netflix.ninja".equals(e.pkg)) e.ambient = 0xFF7A0A2E;    // deep wine-crimson
++            else e.ambient = uniformTiles && e.banner == null ? dominantColor(e.icon) : vividColor(e.banner != null ? e.banner : e.icon);
+         }
+         return e.ambient;
+     }
+diff --git a/launcher/app/src/main/java/com/gathin/tvhome/ClockScene.java b/launcher/app/src/main/java/com/gathin/tvhome/ClockScene.java
+index d8b18de..cd5513f 100644
+--- a/launcher/app/src/main/java/com/gathin/tvhome/ClockScene.java
++++ b/launcher/app/src/main/java/com/gathin/tvhome/ClockScene.java
+@@ -38,7 +38,8 @@ final class ClockScene {
+     private static final int GLOW_STEPS = 16;
+     private static final long GLOW_STEP_MS = 500L;
+     /** Deep, low-brightness glow colours; the glow is drawn at partial alpha on black. */
+-    private static final int[] PALETTE = {0xFF2B5CFF, 0xFF00A39A, 0xFF8A3FFC, 0xFFE0661B, 0xFFD6336C};
++    // Local change: the dock apps' glow colours (YouTube red, Netflix crimson, Prime blue, JioHotstar pink).
++    private static final int[] PALETTE = {0xFFFF2A1A, 0xFFB0123F, 0xFF0A6CFF, 0xFFF2087F};
+ 
+     private final Handler handler = new Handler(Looper.getMainLooper());
+     private final Random random = new Random();
+@@ -129,7 +130,13 @@ final class ClockScene {
+         if (!cfg.clockWallpaper) return;
+         // What Home plays, and Config puts the single wallpaper in it when a theme has no collection.
+         // Reading cfg.wallpaper first held the screensaver on wallpaper.jpg while Home rotated.
+-        if (cfg.wallpapers.isEmpty()) {
++        // Local change: a screensaver.jpg in the theme folder is shown behind the clock on its own,
++        // so the screensaver can have a photo while Home stays plain ("wallpaper": false).
++        File dir = Config.dir(ctx);
++        File own = dir == null ? null : new File(dir, "screensaver.jpg");
++        if (own != null && own.isFile() && own.length() > 0) {
++            wallpaperFile = own;
++        } else if (cfg.wallpapers.isEmpty()) {
+             wallpaperFile = null;
+         } else {
+             // Start on the picture Home is showing. WallpaperPlayer records it under the same
+@@ -237,8 +244,9 @@ final class ClockScene {
+         View parent = (View) content.getParent();
+         int maxX = Math.max(0, parent.getWidth() - content.getWidth());
+         int maxY = Math.max(0, parent.getHeight() - content.getHeight());
+-        float x = maxX * (0.1f + 0.8f * random.nextFloat());
+-        float y = maxY * (0.1f + 0.8f * random.nextFloat());
++        // Local change: always centred (LCD panel, no burn-in), instead of drifting to a random spot.
++        float x = maxX / 2f;
++        float y = maxY / 2f;
+         content.setX(x);
+         content.setY(y);
+         if (parent.getWidth() > 0 && parent.getHeight() > 0) {
+diff --git a/launcher/app/src/main/res/layout/activity_main.xml b/launcher/app/src/main/res/layout/activity_main.xml
+index 4dd006b..f508973 100644
+--- a/launcher/app/src/main/res/layout/activity_main.xml
++++ b/launcher/app/src/main/res/layout/activity_main.xml
+@@ -193,11 +193,11 @@
+                     android:singleLine="true"
+                     android:ellipsize="end"
+                     android:layout_marginStart="4dp"
+-                    android:textColor="#8CFFFFFF"
+-                    android:textSize="12sp"
+-                    android:fontFamily="@string/font_medium"
+-                    android:letterSpacing="0.22"
+-                    android:textAllCaps="true" />
++                    android:textColor="#E6FFFFFF"
++                    android:textSize="26sp"
++                    android:fontFamily="@string/font_light"
++                    android:letterSpacing="0.01"
++                    android:textAllCaps="false" />
+ 
+                 <LinearLayout
+                     android:layout_width="match_parent"
+diff --git a/launcher/app/src/main/res/layout/dream_clock.xml b/launcher/app/src/main/res/layout/dream_clock.xml
+index b059bfa..d8aff4d 100644
+--- a/launcher/app/src/main/res/layout/dream_clock.xml
++++ b/launcher/app/src/main/res/layout/dream_clock.xml
+@@ -17,6 +17,7 @@
+         android:id="@+id/dreamContent"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
++        android:gravity="center_horizontal"
+         android:orientation="vertical">
+ 
+         <LinearLayout
+@@ -28,8 +29,9 @@
+             <TextClock
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+-                android:format12Hour="h:mm"
+-                android:format24Hour="HH:mm"
++                android:format12Hour="h:mm:ss"
++                android:format24Hour="HH:mm:ss"
++                android:fontFeatureSettings="tnum"
+                 android:textColor="#E6FFFFFF"
+                 android:textSize="120sp"
+                 android:fontFamily="@string/font_extralight"
+diff --git a/launcher/app/src/main/res/values/config.xml b/launcher/app/src/main/res/values/config.xml
+index a32a106..eed8664 100644
+--- a/launcher/app/src/main/res/values/config.xml
++++ b/launcher/app/src/main/res/values/config.xml
+@@ -18,9 +18,9 @@
+ 
+     <!-- Apps pinned to the dock row at the bottom, in this order. Missing apps are skipped. -->
+     <string-array name="dock_apps">
++        <item>com.google.android.youtube.tv</item>
+         <item>com.netflix.ninja</item>
+         <item>com.amazon.amazonvideo.livingroom</item>
+-        <item>com.google.android.youtube.tv</item>
+         <item>in.startv.hotstar</item>
+     </string-array>
+     <!-- With fewer dock_apps than columns (or a dock app that is not installed), the free dock slots take
+@@ -208,13 +208,14 @@
+          app each such "global key" was routed to. Check with the real remote: keys injected over ADB never
+          reach InputKeyService. Leave empty to omit. -->
+     <integer-array name="input_key_keycodes">
++        <item>130</item>
+     </integer-array>
+     <!-- Answer the system input switcher (com.android.tv.action.VIEW_INPUTS) with the Inputs menu. For TVs whose
+          stock launcher was the only handler of that action, so the remote's Input button does nothing once the
+          stock launcher is disabled even with InputKeyService on (Hisense huangshan, Android TV 10: no
+          global_keys.xml, no vendor input picker). Off by default: a TV with its own input picker would otherwise
+          get a chooser on every press. Also "handle_view_inputs": true in a theme's config.json. -->
+-    <bool name="handle_view_inputs">false</bool>
++    <bool name="handle_view_inputs">true</bool>
+     <!-- Remote buttons that open an app, as "keycode:package" or "KEYCODE_NAME:package" (INPUT_KEY_SERVICE=1 or
+          HOME_KEY_SERVICE=1; both read this one list, and a theme's config.json can set it too). On Google TV the
+          YouTube button sends 190 (KEYCODE_BUTTON_3) to the stock launcher, so it does nothing once launcherx
