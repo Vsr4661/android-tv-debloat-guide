@@ -15,13 +15,19 @@ over Wi-Fi, in about 15 minutes. **Nothing is uninstalled and everything can be 
 
 | | Before | After |
 |---|---|---|
-| Free memory (MemAvailable) | ~757 MB | **~990 MB** (+30%) |
+| Free RAM — higher is better | ~757 MB | **~990 MB** right after reboot, ~910 MB in daily use |
+| RAM in use — lower is better | ~1,040 MB | **~850–885 MB** (about 150 MB less) |
 | Home screen | Google TV + Xiaomi PatchWall rows, ads, recommendations | Greeting, clock, your 4 apps, glow in each app's colour |
 | Screensaver | Xiaomi screensaver | Centred digital clock with running seconds |
 | Background telemetry / ads | Xiaomi analytics, statistics, promo feeds, Alexa, demo mode… | 33 apps disabled |
 | Menus | Default animations | Instant windows, smooth focus |
 | Ads in apps | — | Many blocked via AdGuard Private DNS (not YouTube ads) |
 | After power-on | Last source / app | Always Home |
+
+> **RAM, not storage.** The TV has ~1.8 GB of RAM (working memory). Free RAM + RAM in use always add up to that, so more
+> free RAM means the disabled apps are no longer running in the background — more room for YouTube, Netflix and the menus.
+> Measured with `MemAvailable` in `/proc/meminfo`. Storage barely changes (disabled apps stay on disk so they can be
+> re-enabled); on this TV 9.2 GB of 11 GB is free.
 
 Tested on **Xiaomi Mi TV MiTV-MOOQ0 ("croods"), Android TV 10, 1.8 GB RAM**. Other Android TVs work with the
 [AI prompt](PROMPT.md) or the [manual guide](docs/SETUP.md), but the app list in `scripts/` is made for this model.
